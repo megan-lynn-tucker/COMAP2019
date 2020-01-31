@@ -1,0 +1,28 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[a4paper]{geometry}
+
+\title{
+	\huge{\bf{Summary}}\\
+	\huge{Problem C: The Opioid Crisis}\\
+	\bigskip
+	\large{Team \#1926726}\\
+	\date{}
+}
+\pagenumbering{gobble}
+
+\begin{document}
+
+\maketitle
+
+Our team constructs a model based on the SIR model for epidemics to explain the trends of opioid use in Ohio, Kentucky, West Virginia, Virginia, and Pennsylvania. This model -- the SIRI model -- is a system of three linear ordinary differential equations describing the transition between non-users, users, and sober individuals. We incorporate elements of the SIRS model into our model, allowing individuals to transition between a user and sober state. However, once one becomes a user, they can never transition back to a non-user state. 
+
+Following the construction of our model, we analyze the data on the drug incident reports. We compare the data on a state by state basis; for each state we look at the data county by county. From this, we hypothesize which county in each state initiated the opium epidemic. We conclude that Jefferson, Kentucky; Cuyahoga, Ohio; Pittsburgh, Pennsylvania; Richmond, Virginia; and Kanawha, West Virginia are likely origins. 
+We also analyze socio-economic conditions--specifically level of education--and their association with opioid use. There is no apparent correlation between not having a high school diploma, having a high school diploma, having a bachelors degree, or having masters degree and using opioids.  
+
+Using our model, we attempt to predict future patterns. We note that our model -- though it has good correlation with the data -- does not fit the shape of the data as well as we would like. We propose several corrections to our model to increase accuracy. 
+
+Our solution to combating the opioid crisis is to increase the availability and effectiveness of government rehabilitation centers. This will decrease the length of time individuals are addicted to opioids and the probability they will relapse. Because there was no correlation between education and opioid use, we do not believe increasing education will decrease the number of users. 
+
+Unfortunately, we did not have sufficient time to test the impact of all of the socio-economic factors on opioid use. Thus, we did not alter our model to include the effects of the socio-economic factors.
+ 
+\end{document}

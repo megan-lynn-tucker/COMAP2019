@@ -1,0 +1,319 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+
+%This allows us to have the page number at the top
+\usepackage[english]{babel}
+\usepackage{fancyhdr}
+\usepackage[section]{placeins}
+\usepackage{lastpage}
+\usepackage{natbib}
+\usepackage{listings}
+\usepackage{float}
+\usepackage{graphicx}
+ \pagestyle{fancy}
+\fancyhf{}
+ \rhead{Page \thepage \hspace{1pt} of \pageref{LastPage}}
+ \lhead{Team \#1926726}
+
+
+
+
+\begin{document}
+
+\title{
+	\Huge{\bf{COMAP 2019}}\\
+	\Huge{Mathematical Contest in Modeling}\\
+	\bigskip 
+	\bigskip
+	\huge{Team \#1926726}\\
+	\LARGE{Problem C: The Opioid Crisis}
+	\date{January 28th, 2019}
+}
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+\tableofcontents
+\newpage
+
+
+\section{Introduction to Problem}
+Our task is to aid the United States in developing a better understanding of the trends in use of synthetic and non-synthetic opioids. Our team was given drug identification counts from every county in Ohio, Kentucky, West Virginia, Virginia, and Pennsylvania in the years 2010 though 2017. Although the problem description includes Tennessee, the data set includes Pennsylvania rather than Tennessee; we proceed assuming we were working with data from Pennsylvania. The drug identification counts are for both synthetic opioids and heroin.
+
+Using the data on drug identification counts, we construct a mathematical model describing the trends of opioid and heroin incidents across the five states over eight years. Using this model, we answer several questions. First, we determine where in each state opioid use may have started. Then we determine how concerning any patterns and trends are to the United States government and at what level of drug use these patterns occur. Lastly, we use our model to predict where and when these patterns will occur in the future.
+
+% 1. Build a mathematical model to describe the spread and characteristics of the reported incidents DONE
+% 2. Using the model, identify any possible locations where specific opioid use might have started in each of the 5 states DONE
+% 3. if the pattern and characteristics continue, are there any specific concerns the U.S. gov should have; at what threshold levels do these occur; when and where does your model predict they will occur in the future DONE
+
+After completing the model, we use the socio-economic data of each county in the above states between 2010 and 2016 to alter our model; the goal is to include pertinent factors about the influence of socio-economic conditions on drug use. Questions to be answered include: how did so many people become addicted to or begin using opioids; what type of people are using (for medical purposes) or abusing opioids; why did opioid use and addiction increase; what caused opioid increase; why do people continue to use opioids despite the danger that continued use poses?
+
+% 1. Is use or trends-in-use somehow associated with any of the US Census socio-economic data provided - if so, modify your model from part 1 to include any important factors from this data set 
+
+After completing Part 1 and Part 2, we use our revised model to identify and develop a method to counter the opioid crisis. We test how viable our solution is using our model. This will show us what parameters determine the success or failure of our method. 
+
+\section{Assumptions and Justification}
+\subsection{Variables}
+The variables included in our model are as follows:
+    \begin{itemize}
+        \item $t$ = time (discrete)
+        \item $S$ = non-user of drugs
+        \item $I$ = drug user
+        \item $R$ = individual who is sober
+        \item $N$ = total population
+        \item $k$ = rate of spread from non-users to users
+        \item $d$ = duration of drug addiction
+        \item $r$ = rate at which sober individuals relapse and become drug users again
+    \end{itemize}
+
+We were unable to extrapolate values for several of these variables, so initial values were determined through literature. We found a value for $N$ through the census data provided. The initial population for the 5 states was approximately 32,000,000. Our values for $d$ and $r$ were determined based off previous studies \cite{relapse} \citep{length}. Our $k$ value was determined by finding the rate of change of the number of users against the total population from 2010-2017, i.e.
+    \begin{equation}
+        k = \frac{\Delta I}{\Delta N}.
+    \end{equation}
+
+\subsection{Model}
+Our underlying assumptions about the model are as follows:
+    \begin{itemize}
+        \item The data provided are correct.
+        \item The total population ($N$) remains constant.
+        \item The total population is $N = S + I + R$. 
+        \item There are no deaths by overdose.
+        \item Once one becomes a user, one can only transition to sober; a user can never revert to being a non-user.
+        \item Each drug incident represents one drug user.
+        \item All drugs are equally likely to be counted among the total drug incidents.
+    \end{itemize}
+    
+We begin with the assumption that the total population $N$ of the five states neither increases nor decreases over the 8 years -- people simply change from being non-users to users to sober. Realistically people will move out of the state, be born, or die, so there are other factors that should influence the population. However, because we are limited to using the date provided with this problem, we do not have access to birth rates, immigration rates, and death rates. Therefore it was more pragmatic to describe $N$ as constant. 
+
+
+\section{Model Design}
+We propose a modification of McKendrick and Kermack's SIR model for epidemics \citep{contribution} in which an individual can go from a non-user of drugs ($S$) to a drug user ($I$). Once the individual is a drug user, they can either stay a drug user, or they can become sober ($R$). If a user becomes sober, there is a chance that the sober individual can become a drug user again, as depicted in the figure below.  
+
+    \begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{Capture}
+    \caption{The SIRI Model}
+    \label{fig:Capture}
+    \end{figure}
+
+We assumed the spread of drugs would mimic that of disease. This hypothesis was backed up by previously developed research on the drug epidemic, which also used the SIR model \citep{optimalcontrol}\citep{optimaltiming}. 
+
+We took inspiration from the SIRS model, which is a modification of the SIR model in which the recovered $R$ can transition back to the susceptible population $S$ \citep{SIRS}. We accounted for relapses by allowing the sober population to reenter the user population. This model, which we call the SIRI model, consists of a system of three linear ordinary differential equations:
+    \begin{equation}
+        \frac{dS(t)}{dt} = -\frac{k}{N}S(t)I(t)
+    \end{equation}
+    \begin{equation}
+        \frac{dI(t)}{dt} = \frac{k}{N}S(t)I(t) - \frac{1}{d}I(t) + rR(t)
+    \end{equation}
+    \begin{equation}
+        \frac{dR(t)}{dt} = \frac{1}{d}I(t) - rR(t).
+    \end{equation}
+
+
+\section{Testing and Analysis}
+Before we could test our model, we had to analyze the data provided. Analyzing this data allowed us to notice common trends. Once we identified these trends in the data we could test how well our model fit. 
+
+\subsection{Analysis}
+We began by analyzing the trends of drug use between the five states. Below is a graph depicting the trend in drug use over seven years. The dark blue line represents a locally weighted smoothing technique (loess) that performed kernel smoothing over the state total drug reports of each state from 2010 to 2017 with a span of 0.2. Since this data is yearly over eight years, seasonality is not considered in this summary.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{stateTotals.png}
+    \caption{Total drug incidents reported for each state (2010-2017).}
+    \label{fig:stateTotals}
+    \end{figure}
+
+The overall trend of the total state drug reports -- as captured by the blue line -- is increasing in an upward, concave manner. The upward trend is likely influenced significantly by the increase in drug incidents in Ohio. Pennsylvania and West Virginia have slightly decreasing numbers of drug reports, and Virginia and Kentucky have slightly increasing numbers of drug reports. The cause of increasing drug reports in  Virginia and Kentucky over the seven years could likely be attributed to population growth. The cause for the increase in drug reports in Ohio beginning in 2011 is not as obvious. Interestingly, Pennsylvania has a lower number of incidents in 2017 then Ohio despite having a significantly larger population.
+
+\subsubsection{Counties}
+Below are graphs depicting the trends of drug use in every county for each of the five states. We hoped that analyzing the state trends based on county trends would give us more insight into why certain states had more incidents than others. Furthermore, using this data we can form hypotheses about where opioid use started in each state, what trends the United States government needs to be aware of, as well as when they need to consider them. It should be noted that the abundance of counties made a legend unreadable; lines of interest are identified in the text.
+
+Beginning with Kentucky (Figure \ref{fig:ky}) we can see that overall, most counties have between 0 and 1000 drug incidents per year between 2010 and 2017. There are four counties that are clearly and disproportionately above that 1000 incident threshold -- Jefferson (top blue), Feyette (green), Kenton (lower blue), and Campbell (orange). Furthermore, there is a clear jump between the county with the greatest number of incidents -- Jefferson -- and the county with the second most -- Feyette. Kenton lies between Feyette and Campbell during the entirety of the seven year period. It is logical to assume that the reason Jefferson has the highest number of incidents is because it is the state capital, and therefore has a higher population.
+
+Ohio (Figure \ref{fig:oh}) follows a similar trend as Kentucky, in that the majority of counties lie below 2,500 incidents per year between 2010 and 2017. There is more variation in which counties have higher drug use, with some overlapping and overtaking other counties. Hamilton (green) grows in an  concave up manner. In 2012, Cuyahoga (gold) surpasses Hamilton's number of incidents until 2017 when they line up. Montgomery (blue) was rather stable, and was surpassed by Franklin in 2014 before it began to level off. Lastly, Lake (turquoise) has steady growth during all seven years.
+
+   \begin{figure}[H]
+    \centering
+    \includegraphics[width=5in]{countyTotals_ky.png}
+    \caption{Total drug incidents reported for each county in Kentucky.}
+    \label{fig:ky}
+    \end{figure}
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[width=5.4in]{countyTotals_oh.png}
+    \caption{Total drug incidents reported for each county in Ohio.}
+    \label{fig:oh}
+    \end{figure}
+    
+\newpage    
+Unlike the previous two states, Pennsylvania (Figure \ref{fig:pa}) is clearly stable or decreasing in the number of drug incidents. The threshold value is around 5,000 incidents with two counties being clear outliers. The county with the largest number of incidents, Philadelphia, has been -- for the most part -- decreasing over the past seven years. It is interesting to note that no other state has an incident count near 35,000. This is most likely due to the comparative size of the state Pennsylvania and the county of Philadelphia. The county with the second most incidents, Allegheny (red), is comparatively stable.
+
+   \begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.5]{countyTotals_pa.png}
+    \caption{Total drug incidents reported for each county in Pennsylvania.}
+    \label{fig:pa}
+    \end{figure}
+
+Virginia (Figure \ref{fig:va}) has large variations within its counties. Most of the counties begin with high numbers of drug incidents in 2010  -- with Richmond (pink) being the largest -- that sharply decrease by 2011. There is another spike -- the largest of which was again Richmond -- in incidents in 2013 that again decreases. It would be interesting to see what the historical context is in relation to these spikes; was there some economic downturn or legal incident which occurred during these years? The threshold value -- if we ignore the spikes in 2010 and 2013 -- is approximately 1,000 incidents. The county with the greatest number of incidents is Fairfax (green) which possesses an increasing trend.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{countyTotals_va.png}
+    \caption{Total drug incidents reported for each county in Virginia.}
+    \label{fig:va}
+    \end{figure}
+
+West Virginia (Figure \ref{fig:wv}) has a fairly clear decrease in incidents over the seven year period. The threshold is very low--about 250 incidents--likely due to the smaller population. Interestingly, the county with the highest number of incidents--Kanawha (green)--appears to be the only county that has an increasing number of incidents. Furthermore, from 2012 to 2015 the number of incidents decreased dramatically.
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.5]{countyTotals_wv.png}
+    \caption{Total drug incidents reported for each county in West Virginia.}
+    \label{fig:wv}
+    \end{figure}
+
+\subsubsection{Current Trends}
+The current trend at the state level is a slight increase in drug incidents. 
+
+At the county level we can see that Kentucky is relatively stable besides the three counties who's number of drug incidents increases in 2017. We could hypothesize that opioid use may have started in Jefferson, since it begins and remains the most prevalent source of drug reports, and changes to such reports in Jefferson don't correspond to expected changes in other counties. 
+
+In Ohio, we see a sharp spike of reports in Cuyahoga that correspond to several other county reports in subsequent years. This could indicate that Cuyahoga incited the increase in opioid use beginning around 2012. 
+
+Pittsburgh shows a steep downward trend, so it would be logical to assume that was the origin for opioid use in Pennsylvania.
+
+As a whole, Virginia's reports are increasing. However, it appears that there is some confounding variable that incited irregular spikes in the data. We hypothesize Richmond is the source of the opioid epidemic in Virginia as other counties mirror its spikes. Just as with Kentucky, however, these hypotheses should be taken with caution, as we are unable to tell how the growth of opioid use was influenced by Richmond. 
+
+Lastly, West Virginia has a clear downward trend in incidents, barring 2017 when Kanawha had an increase in drug incidents. It is likely that Kanawha is the source of opioid use in West Virginia, as other counties follow the trend of decreasing use. 
+
+\subsubsection{Predicting Future Trends}
+Our model predicts that if we let the current rates of drug addiction and relapse remain the same, then from 2017 to 2022, there will be 1,496 more individuals who are drug users.  
+
+To determine a possible strategy for countering the opioid crisis, we tested our model with different values of $d$, the duration of drug addiction and $r$, the rate of relapse. Here the x-axis represents time from 2010 to 2025.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.4]{og_model.png}
+        \caption{Original SIRI model data}
+        \label{fig:og_model}
+    \end{figure}
+
+If we lower the average duration of drug addiction from 15.6 years to 10 years, our model predicts that between 2017-2022 there would be 6,919 more individuals who are drug users. This is an additional 5,423 people addicted to drugs than the original model. Here the x-axis represents time from 2017 to 2027.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.4]{lower_d.png}
+        \caption{SIRI model with $d = 10.0$}
+        \label{fig:lower_d}
+    \end{figure}
+    
+Instead, if we lower the rate of relapse from 50\% to 20\%, we see that between 2017-2022 there would only be 840 more individuals who are drug users, which is 656 less drug users from the original model. Again, the x-axis represents time from 2017 to 2027.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.4]{lower_r.png}
+        \caption{SIRI model with $r = 0.2$}
+        \label{fig:lower_r}
+    \end{figure}
+    
+The best results come from a combination of lowering both the duration of drug addiction and the rate of relapse. If we lower both, then between 2017-2022, our model predicts that there will be a decrease in drug users; 5,308 individuals will stop doing drugs and become sober. Yet again, the x-axis represents time from 2017 to 2027.
+    \begin{figure}[H]
+        \centering
+        \includegraphics[scale=0.4]{lower_both.png}
+        \caption{SIRI model with $d = 10.0$ and $r = 0.2$}
+        \label{fig:lower_both}
+    \end{figure}
+
+It is important to note that there is a lack of predictive power since the parameters are constant and don't change with time.
+
+\subsection{Testing}
+The success of the model is determined by two factors: how well it explains the variation in the current historical data and its forecasting ability. To test this, the locally weighted smoothing technique with a span of 0.2 (loess) used to capture the trend in state total drug reports was used as a basis to test the model. Simple correlation is used to determine the effectiveness of the model in Figure \ref{fig:modelvdataPlot}, where predicted values obtained from the mathematical model were plotted against values obtained from locally weighted smoothing (loess). The correlation coefficient of 0.70 indicates that the model explains about 70\% of the variation in the trend of the data. Additionally, Figure \ref{fig:modelvdataLines} demonstrates that the model not only overestimates, but unfortunately grows in the opposite way that the trend appears to be growing. However, we may be able to use this model to predict values in the near future.
+
+
+% To test the model, we found the values of $I$ for each year through 2017. We then checked those values against the average number of users in each state. 
+
+    \begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{modelvdataPlot.png}
+    \caption{Model vs Data Trend}
+    \label{fig:modelvdataPlot}
+    \end{figure}
+ 
+    
+    \begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{modelvdataLines.png}
+    \caption{Model vs Data Trend Line}
+    \label{fig:modelvdataLines}
+    \end{figure}
+
+
+\section{Strengths and Weaknesses}
+\subsection{Strengths}
+The strengths of our model can be found in its simplicity and few parameters. This means it is easily explained and easily altered. Because we understand its shortcomings, we can add features from other population and epidemic models to make our model more effective and accurate. We can do the same by adding more parameters. Another strength of our model is that it is based off other well known models. Therefore, we are reasonably certain that our model is supported by other mathematicians.
+
+\subsection{Weaknesses}
+While we feel that our model fits the data within reason, there are ways we could further improve the model. Currently, our model has no way for individuals to exit the system -- either by death or by moving to another state -- so after an extended period of time everyone will become either a drug user or a sober individual. If we had data indicating the number of overdoses that occur from drug users, we could adjust our model to have another compartment, the overdose or $O$ compartment and thus, a fourth equation. Then, drug users could go from being a drug user to a sober individual or overdosing and dying. 
+
+Our model reasonable fits the given data. However, the shape of our data compared to the provided data shows that ours is concave down while the true data is concave up (Figure \ref{fig:modelvdataLines}). This could be due to a variety of factors: we start with a large non-user population compared to a small user population and a small $k$ value, which might account for the results acting strange; our values for $d$ and $r$ might not be correct; or the model might not be as accurate as we would like. It is a simple fix if the values for $d$ and $r$ are not the most accurate. However, it is more likely that our model simply doesn't fit the data like we want it to -- our model initially increases faster than the data does. Furthermore, its increase slows down while the increase in the trend seen in the data speeds up.
+
+\section{Socio-Economic Trends}
+To explore specific socio-economic factors and their influence in total drug reports, specific counties that displayed disproportionate reports over the 2010-2017 period were selected, and variables of interest were explored in a multiple linear regression setting. The counties investigated were Hamilton County, Ohio and Fairfax County, Virginia which both demonstrate uncharacteristically high drug reports compared to their neighboring counties. The explanatory variables investigated focused on education, specifically the possession of a high school degree and/or a bachelor's degree. The model tested for both Fairfax and Hamilton was: \\
+
+    \begin{align}
+        \mu \{\text{Total\ Drug\ Reports}|\text{Year},\text{High\ School},\text{Bachelor's}\}&
+    \end{align}
+    
+    \begin{align}
+        &=\beta_{0}+\beta_{1}\text{Year}+\beta_{2}\text{High\ School}+\beta_{3}\text{Bachelors}+\beta_{4}\text{High\ School:Bachelors}.
+    \end{align} \\
+
+There was no significant evidence that any of the model parameters above were nonzero; the variation in the data was not significantly explained by these factors ($p > 0.5$). This was true despite year being included as an explanatory variable. This is echoed by the results in the plot of the auto-correlation function of overall total drug reports, where lag corresponds to one year, seen in Figure \ref{fig:totaldrugs_acf}. We see that total drug reports alone for one year do not possess predictive power for subsequent years ($ACF < 0.6$).
+
+    \begin{figure}[h!]
+        \centering
+        \includegraphics[scale=0.4]{totaldrugs_acf.png}
+        \caption{Auto Correlation Function. Lag correspond to Year.}
+        \label{fig:totaldrugs_acf}
+    \end{figure}
+
+\section{Solutions to Problem}
+The simplest solution is to decrease each of the $k$, $d$, and $r$ values. Decreasing the $r$ values is likely the simplest; the government should invest in treatment and drug rehabilitation centers. This would prevent the sober population from falling back into the user population. Decreasing the $k$ and $d$ values is arguably more difficult. Educating the population on the dangers of drug addiction is certainly a step, as is providing simple and easy ways for people to get help.
+
+Based on socio-economic factors tested, we can conclude that a model taking into account only education parameters does not account for the variation we see in opioid heavy counties. This could be evidence to focus more on regulation and recovery rather than forms of education and information about opioid abuse. We also see that time alone has barely any predictive power for future years' total drug reports.
+
+
+\section{Conclusion}
+After looking at our model and the data we conclude that with revisions our model could prove to be good at predicting future trends. Had we more time to work on this project we would have explored how altering the model would have altered its effectiveness. However, even with the time constraints, we were able to produce a reasonably accurate model. Unfortunately, this model will likely not be very effective at predicting future trends. Though, we noted that there is very little correlation within the data in the first place, so this might not be entirely the fault of the model.
+
+Our analysis of the data reveals that there are surprisingly few overall trends. We agree that as the populations of each state increases, so too does the number of drug incidents. On a county level, the overall trends vary; Virginia especially has unexplained spikes in the data. This is likely due to some outside factors. We note that there is no correlation between education and opioid use. Therefore, our solution to the crisis does not include increasing education. We instead recommend changing how we treat drug addiction. 
+
+If we had more time, we would test other socio-economic factors such as marital status, gender, age, and race. Furthermore, we would test the correlation of these factors between all of the counties. Unfortunately, as we were given over 600 different socio-economic variables, we did not have time to test them all. 
+
+Because we didn't have time to test the impact of the socio-economic factors on drug incidents, we were not able to alter our model to include the effects of the socio-economic factors. As it stands, because we were not able to find any correlation between education and opioid use, we did not change our model. 
+
+\newpage
+
+
+\addcontentsline{toc}{section}{References}
+\bibliographystyle{plain}
+\bibliography{references}
+
+\newpage
+
+\addcontentsline{toc}{section}{Appendix}
+\section*{Appendix}
+We used the Julia package DifferentialEquations.jl to find numerical solutions for our model. We used the R packages ggplot2, Plyr, and tibble to analyze the data sets provided. 
+
+\subsection*{Julia}
+
+ \begin{figure}[h!]
+    \centering
+    \includegraphics[scale=0.7]{Code.PNG}
+    \caption{Julia code used to solve and plot the SIRI model.}
+    \label{fig:jcode}
+ \end{figure}
+
+\subsection*{R}
+Here are selected pieces of our R code used to analyze the given data:
+
+\lstinputlisting[language=R]{data_explore.Rmd}
+\end{document}
