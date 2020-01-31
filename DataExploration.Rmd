@@ -1,0 +1,213 @@
+---
+title: "initial_explore"
+output: html_document
+output: pdf
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tibble)
+library(ggplot2)
+library(plyr)
+```
+
+## Various Plots for Initial Exploration
+
+
+```{r}
+# read in the data
+library(readxl)
+alldrugs <- read_excel("MCM_NFLIS_Data.xlsx", sheet = "Data")
+```
+
+```{r}
+# State Totals
+
+ggplot(alldrugs, aes(YYYY, TotalDrugReportsState))+
+  geom_line(aes(group = State, color = State))+
+  geom_smooth(method = "loess", span = 0.2, size = 2)+
+  ggtitle("State Total Drug Reports (2010-2017)")+
+  xlab("Year")+
+  ylab("Total Drug Reports")
+```
+
+```{r}
+# store this model for use later
+
+alldrugs.lo_fit <- loess(TotalDrugReportsState ~ YYYY, alldrugs)
+
+```
+
+```{r}
+# County Totals
+ggplot(alldrugs, aes(YYYY, TotalDrugReportsCounty))+
+  geom_line(aes(group = COUNTY, color = COUNTY))+
+  theme(legend.position = "none")+
+  ggtitle("County Total Drug Reports (2010-2017)")+
+  xlab("Year")+
+  ylab("Total Drug Reports")
+```
+
+```{r}
+# County Plots by State
+
+# OH
+alldrugs.OH <- subset(alldrugs, State == "OH")
+
+ggplot(alldrugs.OH, aes(YYYY, TotalDrugReportsCounty))+
+  geom_line(aes(group = COUNTY, color = COUNTY))+
+  ggtitle("Ohio County Total Drug Reports (2010-2017)")+
+  theme(legend.position = "none")+
+  xlab("Year")+
+  ylab("Total Drug Reports")
+```
+
+```{r}
+# KY
+alldrugs.KY <- subset(alldrugs, State == "KY")
+
+ggplot(alldrugs.KY, aes(YYYY, TotalDrugReportsCounty))+
+  geom_line(aes(group = COUNTY, color = COUNTY))+
+  ggtitle("Kentucky County Total Drug Reports (2010-2017)")+
+  theme(legend.position = "none")+
+  xlab("Year")+
+  ylab("Total Drug Reports")
+```
+
+```{r}
+# PA
+alldrugs.PA <- subset(alldrugs, State == "PA")
+
+ggplot(alldrugs.PA, aes(YYYY, TotalDrugReportsCounty))+
+  geom_line(aes(group = COUNTY, color = COUNTY))+
+  ggtitle("Pennsylvania County Total Drug Reports (2010-2017)")+
+  theme(legend.position = "none")+
+  xlab("Year")+
+  ylab("Total Drug Reports")
+```
+
+```{r}
+# VA
+alldrugs.VA <- subset(alldrugs, State == "VA")
+
+ggplot(alldrugs.VA, aes(YYYY, TotalDrugReportsCounty))+
+  geom_line(aes(group = COUNTY, color = COUNTY))+
+  ggtitle("Virginia County Total Drug Reports (2010-2017)")+
+  theme(legend.position = "none")+
+  xlab("Year")+
+  ylab("Total Drug Reports")
+```
+
+```{r}
+# WV
+alldrugs.WV <- subset(alldrugs, State == "WV")
+
+ggplot(alldrugs.WV, aes(YYYY, TotalDrugReportsCounty))+
+  geom_line(aes(group = COUNTY, color = COUNTY))+
+  ggtitle("West Virginia County Total Drug Reports (2010-2017)")+
+  theme(legend.position = "none")+
+  xlab("Year")+
+  ylab("Total Drug Reports")
+```
+
+
+# Model Fitting
+
+```{r}
+alldrugs.model <- tibble( Year = 2010:2017, Data 
+    = c(51490, 56843, 59997, 61900, 63091, 63878, 64435, 64861))
+alldrugs.rvals <- unique(alldrugs.lo_fit$fitted)
+
+alldrugs.model$rvals <- unique(alldrugs.lo_fit$fitted)
+
+model_rsq <- cor(alldrugs.rvals, alldrugs.model$Data)
+
+plot(alldrugs.rvals, alldrugs.model$Data, main 
+    = "Predicted (Model) vs. Fitted (loess) values", xlab 
+    = "Fitted Values", ylab = "Predicted Values")
+abline(lm(alldrugs.model$Data ~ alldrugs.rvals), col = "red")
+legend(60000,55000, legend = c("R^2 = 0.70"),col=c("red"))
+```
+
+```{r}
+ggplot(alldrugs.model)+
+  geom_line(aes(Year,Data), color = "red")+
+  geom_line(aes(Year,rvals), color = "blue")+
+  ylab("Predicted Values")+
+  ggtitle("Model (Red) and Fit (Blue) Comparison")
+```
+
+# County Based Parameter Exploration
+
+```{r}
+# read in the data
+library(readr)
+suppressMessages(censusData_2010 <- read_csv
+    ("census_data/ACS_10_5YR_DP02_with_ann.csv", skip = 1))
+suppressMessages(censusData_2011 <- read_csv
+    ("census_data/ACS_11_5YR_DP02_with_ann.csv", skip = 1))
+suppressMessages(censusData_2012 <- read_csv
+    ("census_data/ACS_12_5YR_DP02_with_ann.csv", skip = 1))
+suppressMessages(censusData_2013 <- read_csv
+    ("census_data/ACS_13_5YR_DP02_with_ann.csv", skip = 1))
+suppressMessages(censusData_2014 <- read_csv
+    ("census_data/ACS_14_5YR_DP02_with_ann.csv", skip = 1))
+suppressMessages(censusData_2015 <- read_csv
+    ("census_data/ACS_15_5YR_DP02_with_ann.csv", skip = 1))
+suppressMessages(censusData_2016 <- read_csv
+    ("census_data/ACS_16_5YR_DP02_with_ann.csv", skip = 1))
+```
+
+```{r}
+# Identify Counties of Interest based on model + trend
+drugCounties.OH <- unique(subset
+    (alldrugs.OH, TotalDrugReportsCounty > 5000)$COUNTY)
+drugCounties.KY <- unique(subset
+    (alldrugs.KY, TotalDrugReportsCounty > 1000)$COUNTY)
+drugCounties.PA <- unique(subset
+    (alldrugs.PA, TotalDrugReportsCounty > 5000)$COUNTY)
+drugCounties.VA <- unique(subset
+    (alldrugs.VA, TotalDrugReportsCounty > 1500)$COUNTY)
+drugCounties.WV <- unique(subset
+    (alldrugs.WV, TotalDrugReportsCounty > 750)$COUNTY)
+```
+
+```{r}
+# Explore results of multiple linear regression for
+parameters of interest for the model
+
+# Hamilton, OH
+hamilton_rpts <- as.numeric(
+                      unique(
+                        subset(alldrugs.OH, COUNTY == "HAMILTON", 
+                               select = TotalDrugReportsCounty))
+                                        $TotalDrugReportsCounty)
+
+hamilton.dat <- tibble("Year" = 2010:2016, "Drug Reports" 
+    = hamilton_rpts[1:7], "%HS" = hamilton_high_edu, "
+    %College" = hamilton_college_edu)
+
+hamilton.lm <- lm(hamilton.dat$`Drug Reports` ~ 
+    hamilton.dat$Year + hamilton.dat$`%HS` + 
+    hamilton.dat$`%College` + 
+    hamilton.dat$`%HS`:hamilton.dat$`%College`)
+
+summary(hamilton.lm)
+
+```
+
+# Time is not a significant explanatory variable?
+
+```{r}
+
+totaldrugs <- c(0,0,0,0,0,0,0,0)
+for (i in 1:8){
+totaldrugs[i] <- sum(unique(subset(alldrugs, 
+YYYY == 2009 + i, select 
+= TotalDrugReportsState))$TotalDrugReportsState)
+}
+
+totaldrugs.ts <- ts(totaldrugs, start = 2010, end = 2017)
+acf(totaldrugs.ts)
+
+```
